@@ -1,0 +1,477 @@
+:root {
+  --bg: #12161c;
+  --surface: #1d232c;
+  --surface-2: #2a323d;
+  --text: #eef1f5;
+  --muted: #9aa5b4;
+  --accent: #3fa36b;
+  --danger: #8e3a33;
+  --sick: #f0b429;
+  --radius: 8px;
+  --rail-width: 92px;
+
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg);
+  color-scheme: dark;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+h2,
+p {
+  margin: 0;
+}
+
+ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+/* Layout: battlefield left, button rail right (landscape is the main target). */
+main {
+  min-height: 100dvh;
+  padding: max(6px, env(safe-area-inset-top)) calc(var(--rail-width) + env(safe-area-inset-right) + 6px)
+    max(6px, env(safe-area-inset-bottom)) max(6px, env(safe-area-inset-left));
+}
+
+.rail {
+  position: fixed;
+  inset: 0 0 0 auto;
+  z-index: 10;
+  width: calc(var(--rail-width) + env(safe-area-inset-right));
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(8px, env(safe-area-inset-bottom)) 8px;
+  background: var(--surface);
+  border-left: 1px solid var(--surface-2);
+}
+
+.rail__zoom {
+  display: flex;
+  gap: 6px;
+}
+
+.rail__zoom .btn {
+  flex: 1;
+  min-width: 0;
+  font-size: 1.2rem;
+}
+
+.rail__count {
+  margin-top: auto;
+  text-align: center;
+  font-size: 0.8rem;
+}
+
+/* Untap all at the bottom of the rail, under the thumb. */
+.btn--untap {
+  min-height: 72px;
+  font-size: 1rem;
+}
+
+/* Portrait fallback: rail becomes a bottom bar. */
+@media (orientation: portrait) {
+  main {
+    padding-right: max(6px, env(safe-area-inset-right));
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+
+  .rail {
+    inset: auto 0 0 0;
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 8px max(8px, env(safe-area-inset-bottom));
+    border-left: 0;
+    border-top: 1px solid var(--surface-2);
+  }
+
+  .rail__count {
+    margin: 0 auto;
+  }
+
+  .btn--untap {
+    min-height: 48px;
+    padding: 0 20px;
+  }
+}
+
+.empty {
+  color: var(--muted);
+  padding: 24px 0;
+  text-align: center;
+}
+
+/* Buttons */
+.btn {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  font: inherit;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.btn--icon {
+  padding: 0;
+  font-size: 1.2rem;
+}
+
+.btn--small {
+  min-height: 36px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.btn--mini {
+  flex: 1;
+  min-width: 0;
+  min-height: 26px;
+  padding: 0;
+  border-radius: 5px;
+  font-size: 0.9rem;
+}
+
+.btn--primary {
+  background: var(--accent);
+}
+
+.btn--danger {
+  background: var(--danger);
+}
+
+/* Card face */
+.card-face {
+  display: block;
+  width: 100%;
+  aspect-ratio: 63 / 88;
+  border-radius: 4.75% / 3.4%;
+  object-fit: cover;
+  background: var(--surface-2);
+}
+
+.card-face--text {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding: 8%;
+  overflow: hidden;
+  text-align: left;
+  border: 2px solid #444c57;
+  color: var(--text);
+  font-size: 0.75rem;
+  line-height: 1.2;
+}
+
+.card-face--text small {
+  color: var(--muted);
+  font-size: 0.85em;
+}
+
+.card-face__pt {
+  position: absolute;
+  right: 8%;
+  bottom: 5%;
+  font-weight: 700;
+}
+
+/* Battlefield: ~8 cards per row on an iPhone 12 mini in landscape. */
+.field-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--card-size, 72px), 1fr));
+  gap: 6px;
+}
+
+.field-card {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* The tap area keeps the untapped card's footprint, so tapping never reflows the grid. */
+.field-card__tap {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.field-card__frame {
+  display: block;
+  border-radius: 5px;
+  transition: transform 0.2s ease;
+}
+
+/* Rotated and scaled (63/88) so the tapped card fits within its column. */
+.is-tapped .field-card__frame {
+  transform: rotate(90deg) scale(0.716);
+}
+
+.is-sick .field-card__frame {
+  outline: 2px dashed var(--sick);
+  outline-offset: 1px;
+  filter: saturate(0.4) brightness(0.8);
+}
+
+/* Text cards scale with the card size; the rules text only shows once it's big enough to read. */
+.field-card .card-face--text {
+  container-type: inline-size;
+  font-size: calc(var(--card-size, 72px) / 110 * 1rem);
+  padding: 6px 5px;
+}
+
+.field-card .card-face--text .card-face__pt {
+  display: none;
+}
+
+@container (max-width: 100px) {
+  .field-card .card-face--text :is(small, p) {
+    display: none;
+  }
+}
+
+.field-card__controls {
+  display: flex;
+  gap: 3px;
+}
+
+/* Badges */
+.badge {
+  position: absolute;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.7rem;
+  padding: 1px 6px;
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+.badge--sick {
+  top: 2px;
+  left: 50%;
+  translate: -50% 0;
+  background: var(--sick);
+  color: #1b1b1b;
+}
+
+.badge--pt {
+  right: 2px;
+  bottom: 2px;
+  font-size: 0.8rem;
+  background: #000d;
+  border: 1px solid var(--surface-2);
+}
+
+.badge--pt.is-boosted {
+  border-color: var(--accent);
+  color: #8be0ad;
+}
+
+/* Dialogs */
+dialog {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--text);
+}
+
+dialog::backdrop {
+  background: rgb(0 0 0 / 0.7);
+}
+
+/* Token menu */
+.sheet {
+  width: min(96vw, 760px);
+  max-width: none;
+  max-height: calc(100dvh - 16px);
+}
+
+.sheet__content {
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100dvh - 16px);
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.sheet__header {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 8px 6px 12px;
+  border-bottom: 1px solid var(--surface-2);
+}
+
+.sheet__header h2 {
+  font-size: 1rem;
+}
+
+.menu-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 4px 12px;
+  padding: 8px;
+  overflow-y: auto;
+}
+
+.menu-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.menu-row__thumb {
+  flex: none;
+  width: 32px;
+}
+
+.menu-row__thumb .card-face--text {
+  padding: 0;
+  border-width: 1px;
+}
+
+.menu-row__thumb .card-face--text > * {
+  display: none;
+}
+
+.menu-row__info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.menu-row__info small {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.menu-row__count {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+/* Card preview: card and text side by side to suit landscape. */
+.modal {
+  max-width: 96vw;
+}
+
+.modal__content {
+  display: flex;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  background: var(--surface);
+}
+
+.modal__card {
+  flex: none;
+  height: min(calc(100dvh - 48px), 420px);
+  aspect-ratio: 63 / 88;
+}
+
+.modal__card .card-face {
+  height: 100%;
+}
+
+.modal__text {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 200px;
+}
+
+.modal__text .btn {
+  margin-top: auto;
+}
+
+@media (orientation: portrait) {
+  .modal__content {
+    flex-direction: column;
+  }
+
+  .modal__card {
+    height: auto;
+    width: min(70vw, 300px);
+  }
+
+  .modal__text {
+    width: auto;
+  }
+}
+
+/* Idle world: full screen, every tap closes it. */
+.idle-world {
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  overflow: hidden;
+  background: #000;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  cursor: pointer;
+}
+
+.idle-world::backdrop {
+  background: #000;
+}
+
+.idle-world__canvas {
+  display: block;
+  image-rendering: crisp-edges;
+  image-rendering: pixelated;
+}
+
+.sheet__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn[aria-pressed='false'] {
+  color: var(--muted);
+}
