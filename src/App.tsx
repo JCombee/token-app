@@ -7,6 +7,7 @@ import { TokenMenu } from './components/TokenMenu'
 import { IdleWorld } from './idle/IdleWorld'
 import { useIdle } from './idle/useIdle'
 import { useCardSize } from './useCardSize'
+import { useWakeLock } from './useWakeLock'
 
 export default function App() {
   const [field, dispatch] = useReducer(battlefieldReducer, undefined, () => loadBattlefield())
@@ -14,6 +15,7 @@ export default function App() {
   const [preview, setPreview] = useState<TokenDef | null>(null)
   const { idle, wake, sleep, auto, setAuto } = useIdle()
   const cardSize = useCardSize()
+  useWakeLock()
 
   useEffect(() => saveBattlefield(field), [field])
 
